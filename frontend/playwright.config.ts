@@ -23,7 +23,8 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] }, grepInvert: /@mobile/ },
     { name: "mobile", use: { ...devices["Pixel 7"] }, grep: /@mobile/ },
   ],
-  webServer: [
+  // Against a deployed or already-running stack (E2E_BASE_URL), don't start local servers.
+  webServer: process.env.E2E_BASE_URL ? undefined : [
     {
       command: "cd ../backend && APPLIER_SCHEDULER_ENABLED=false .venv/bin/uvicorn app.main:app --port 8000",
       url: "http://localhost:8000/api/health",

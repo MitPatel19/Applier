@@ -6,7 +6,7 @@ import secrets
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -20,7 +20,11 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
 
     # PostgreSQL in production, e.g. postgresql+psycopg://user:pass@host/applier
-    database_url: str = f"sqlite:///{BASE_DIR / 'data' / 'applier.db'}"
+    # Also read from plain DATABASE_URL, which Railway/Heroku-style Postgres add-ons provide.
+    database_url: str = Field(
+        default=f"sqlite:///{BASE_DIR / 'data' / 'applier.db'}",
+        validation_alias=AliasChoices("APPLIER_DATABASE_URL", "DATABASE_URL"),
+    )
 
     # Signing key for session JWTs. MUST be set explicitly in production.
     secret_key: str = Field(default_factory=lambda: secrets.token_urlsafe(48))
@@ -67,6 +71,15 @@ class Settings(BaseSettings):
     # "not connected" (served by sample data in demo mode).
     linkedin_partner_access: bool = False
     indeed_partner_access: bool = False
+
+    @field_validator("database_url")
+    @classmethod
+    def _use_psycopg_driver(cls, url: str) -> str:
+        """``postgres://`` / ``postgresql://`` URLs from hosting providers -> SQLAlchemy + psycopg 3."""
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                return "postgresql+psycopg://" + url[len(prefix):]
+        return url
 
     @property
     def is_production(self) -> bool:

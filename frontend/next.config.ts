@@ -12,6 +12,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
+  experimental: {
+    // Preparing an application (tailoring, cover letter, research) can take a while with AI enabled.
+    proxyTimeout: 120_000,
+  },
   // The browser only ever talks to same-origin /api/*, which is proxied to FastAPI.
   // This keeps the session cookie first-party and httpOnly.
   async rewrites() {

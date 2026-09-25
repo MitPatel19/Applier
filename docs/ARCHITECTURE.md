@@ -132,3 +132,11 @@ dedicated queue (Celery, RQ, Arq, Cloud Tasks) only changes that function.
 | Frontend units | Vitest | API client error normalization, CSRF header, formatting helpers. |
 | End-to-end | Playwright (Chromium) | Critical journeys: onboarding, search, prepare & approve, pipeline drag-and-drop. |
 | Static | `tsc --noEmit`, ESLint, Ruff | Type safety and lint on every change. |
+
+## Database migrations
+
+Tables are created with `Base.metadata.create_all` on startup, which is enough for a new
+database and for adding new tables. Changing columns of existing tables in a live database
+needs a migration: add Alembic (`alembic init`, point `target_metadata` at
+`app.db.Base.metadata`, generate revisions with `--autogenerate`) and run
+`alembic upgrade head` before starting the API (e.g. as the Railway pre-deploy command).

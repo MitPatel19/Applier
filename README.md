@@ -55,6 +55,12 @@ choose **Explore with sample data** to load a realistic profile, resumes, jobs,
 applications and interviews. Sample data is clearly labelled and can be removed from
 *Settings → Sample data*.
 
+### Deploy on Railway
+
+Step-by-step guide: [`docs/DEPLOY_RAILWAY.md`](docs/DEPLOY_RAILWAY.md) (Postgres + API + web,
+with the exact settings and variables to paste). Generate production secrets with
+`python3 scripts/generate-secrets.py`.
+
 ### Production (Docker)
 
 ```bash
@@ -97,6 +103,7 @@ cd frontend && npx playwright test              # end-to-end journeys (starts bo
   integrity guarantees, data model, security, background work, frontend structure and
   testing strategy.
 - [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md): every endpoint, request and response.
+- [`docs/DEPLOY_RAILWAY.md`](docs/DEPLOY_RAILWAY.md): deploying on Railway.
 
 ## Project layout
 
