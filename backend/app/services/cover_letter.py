@@ -10,7 +10,7 @@ deterministic letter.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 
 from app.models import Company, Job, Template
@@ -68,6 +68,28 @@ def _article(word: str) -> str:
 def _is_past_verb(word: str) -> bool:
     w = word.lower()
     return w.endswith("ed") or w in _IRREGULAR_PAST
+
+
+_BASE_VERB_PAST = {
+    "build": "built", "write": "wrote", "lead": "led", "run": "ran", "make": "made", "teach": "taught",
+    "develop": "developed", "maintain": "maintained", "design": "designed", "create": "created",
+    "implement": "implemented", "support": "supported", "manage": "managed", "improve": "improved",
+    "automate": "automated", "deploy": "deployed", "migrate": "migrated", "test": "tested",
+    "troubleshoot": "troubleshot", "resolve": "resolved", "configure": "configured", "monitor": "monitored",
+    "collaborate": "collaborated", "analyze": "analyzed", "document": "documented", "integrate": "integrated",
+    "optimize": "optimized", "coordinate": "coordinated", "train": "trained", "deliver": "delivered",
+}
+
+
+def _past_tense_bullet(text: str) -> str | None:
+    """"Build and maintain REST APIs" -> "built and maintained REST APIs" (only for known base verbs)."""
+    words = text.split()
+    if not words or words[0].lower() not in _BASE_VERB_PAST:
+        return None
+    words[0] = _BASE_VERB_PAST[words[0].lower()]
+    if len(words) > 2 and words[1].lower() == "and" and words[2].lower() in _BASE_VERB_PAST:
+        words[2] = _BASE_VERB_PAST[words[2].lower()]
+    return " ".join(words)
 
 
 def _sentence(text: str) -> str:
@@ -133,6 +155,8 @@ def _render_examples(examples: list[_Example]) -> list[Evidence]:
     out: list[Evidence] = []
     previous: str | None = None
     for ex in examples:
+        if past := _past_tense_bullet(ex.text):
+            ex = replace(ex, text=past)
         verb_first = _is_past_verb(ex.text.split(" ", 1)[0])
         body = _lower_first(ex.text) if verb_first else ex.text
         if ex.kind == "project" and ex.text.startswith("built "):

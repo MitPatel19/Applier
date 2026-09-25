@@ -57,8 +57,8 @@ function groupByDay(entries: AuditEntry[]) {
     const d = parseDate(e.created_at);
     if (!d) continue;
     const key = dayKey(d);
-    const last = groups[groups.length - 1];
-    if (last && last.key === key) last.items.push(e);
+    const existing = groups.find((g) => g.key === key);
+    if (existing) existing.items.push(e);
     else groups.push({ key, date: d, items: [e] });
   }
   return groups;

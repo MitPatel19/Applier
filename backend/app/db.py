@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from datetime import UTC, datetime
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import DateTime, create_engine, event, inspect
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import get_settings
@@ -36,6 +37,23 @@ def _make_engine(url: str):
 
 engine = _make_engine(get_settings().database_url)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+
+
+@event.listens_for(Session, "before_flush")
+def _normalize_datetimes(session: Session, _ctx, _instances) -> None:
+    """Store every timestamp as naive UTC.
+
+    Clients may send timezone-aware values (e.g. ``2026-09-24T20:45:00Z``); mixing aware and
+    naive datetimes would break comparisons, so they are converted to UTC and made naive.
+    """
+    for obj in (*session.new, *session.dirty):
+        mapper = inspect(obj).mapper
+        for attr in mapper.column_attrs:
+            column = attr.columns[0]
+            if isinstance(column.type, DateTime):
+                value = getattr(obj, attr.key)
+                if isinstance(value, datetime) and value.tzinfo is not None:
+                    setattr(obj, attr.key, value.astimezone(UTC).replace(tzinfo=None))
 
 
 def get_db() -> Iterator[Session]:

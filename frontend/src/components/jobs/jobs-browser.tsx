@@ -355,7 +355,7 @@ export function JobsBrowser({ routeView }: { routeView?: JobView }) {
           </>
         }
       >
-        <p className="mt-3 text-sm text-muted" aria-live="polite">
+        <div className="mt-3 text-sm text-muted" aria-live="polite">
           {counts ? (
             <>
               <span className="font-semibold text-text">{relevant} Relevant Jobs</span>
@@ -369,7 +369,7 @@ export function JobsBrowser({ routeView }: { routeView?: JobView }) {
           ) : (
             <Skeleton className="inline-block h-4 w-72 max-w-full align-middle" />
           )}
-        </p>
+        </div>
       </PageHeader>
 
       <AgentRunningBanner className="mb-5" />

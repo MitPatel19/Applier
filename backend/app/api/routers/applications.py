@@ -71,6 +71,15 @@ EDITABLE = (ApplicationStatus.discovered, ApplicationStatus.saved, ApplicationSt
 APPROVABLE = (ApplicationStatus.reviewing, ApplicationStatus.ready)
 
 
+def _source_label(app: Application) -> str:
+    """Human label of the posting's source ("LinkedIn", "Company Website")."""
+    if app.job:
+        for src in app.job.sources:
+            if src.source == app.source:
+                return src.source_label
+    return (app.source or "Unknown").replace("_", " ").title()
+
+
 def _get(db: Session, app_id: int, user: User) -> Application:
     return get_owned(db, Application, app_id, user, "application")
 
@@ -225,7 +234,7 @@ def _preview_rows(app: Application, items: list[dict], answered: int, total: int
         PreviewRow(label="COMPANY", value=app.company_name),
         PreviewRow(label="POSITION", value=app.job_title),
         PreviewRow(label="LOCATION", value=app.location or "Not listed"),
-        PreviewRow(label="SOURCE", value=(app.source or "Unknown").replace("_", " ").title()),
+        PreviewRow(label="SOURCE", value=_source_label(app)),
         PreviewRow(label="MATCH", value=f"{app.match_score}%" if app.match_score is not None else "Not scored"),
         PreviewRow(label="RESUME", state="ok" if app.resume_id else "missing",
                    value=(f"Customized — {version.file_name}" if version and version.changes

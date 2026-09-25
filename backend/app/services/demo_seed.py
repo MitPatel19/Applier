@@ -25,6 +25,7 @@ from app.models import (
     ApplicationStatusChange,
     AuditLog,
     Company,
+    CoverLetter,
     Education,
     EmailMessage,
     Experience,
@@ -258,6 +259,8 @@ def clear_demo(db: Session, user: User) -> int:
             _clear_profile(db, user)
         db.delete(task)
     removed = db.execute(delete(Application).where(Application.user_id == user.id, Application.is_demo.is_(True)))
+    demo_jobs = select(Job.id).where(Job.user_id == user.id, Job.is_demo.is_(True))
+    db.execute(delete(CoverLetter).where(CoverLetter.user_id == user.id, CoverLetter.job_id.in_(demo_jobs)))
     for model in (Job, Company, Resume, Recruiter):
         db.execute(delete(model).where(model.user_id == user.id, model.is_demo.is_(True)))
     db.flush()
@@ -419,6 +422,34 @@ def _seed_applications(db: Session, jobs: list[Job], resumes: list[Resume], now:
         job.is_saved, job.saved_at = True, now - timedelta(days=1)
     db.flush()
     return apps
+
+
+def _prepare_materials(db: Session, user: User, apps: list[Application]) -> None:
+    """Run the real preparation pipeline for demo applications past the review stage.
+
+    "Ready to Apply" must mean ready: a tailored resume, a cover letter and prepared answers.
+    Applications that were already sent get the same materials, marked approved/confirmed.
+    """
+    from app.services import answers as answers_service  # noqa: PLC0415
+    from app.services import application_prep, readiness  # noqa: PLC0415
+    from app.services.profile_bundle import load_bundle  # noqa: PLC0415
+
+    bundle = load_bundle(db, user)
+    for app in apps:
+        if app.status == S.reviewing or app.job is None or app.resume is None:
+            continue
+        version = application_prep.tailor_version(db, bundle, app.resume, app.job)
+        letter = application_prep.write_cover_letter(db, bundle, app.job, app.job.company, "professional")
+        app.resume_version_id, app.resume_version = version.id, version
+        app.cover_letter_id, app.cover_letter = letter.id, letter
+        answers = answers_service.prepare_answers(db, bundle, app.job, app)
+        if app.applied_at:
+            version.status, letter.status = "approved", "approved"
+            version.changes = [{**c, "accepted": True if c.get("accepted") is None else c["accepted"]}
+                               for c in version.changes]
+            for answer in answers:
+                answer.confirmed = True
+        app.readiness = readiness.compute_readiness(db, bundle, app)
 
 
 def _by_status(apps: list[Application]) -> dict[ApplicationStatus, Application]:
@@ -619,6 +650,7 @@ def seed_demo(db: Session, user: User) -> str:
     db.add(task)
     jobs = _seed_jobs(db, user)
     apps = _seed_applications(db, jobs, resumes, now)
+    _prepare_materials(db, user, apps)
     first_by_status = _by_status(apps)
     _seed_recruiters(db, user, first_by_status, now)
     interviews = _seed_interviews(db, first_by_status, now)
