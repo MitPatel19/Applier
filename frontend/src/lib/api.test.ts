@@ -30,7 +30,7 @@ describe("api client", () => {
       "fetch",
       mockFetch(409, { error: { code: "conflict", message: "Already exists", retryable: false, details: null } }),
     );
-    const err = await api.post("/applications", {}).catch((e) => e);
+    const err = (await api.post("/applications", {}).catch((e: unknown) => e)) as ApiError;
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(409);
     expect(err.message).toBe("Already exists");
