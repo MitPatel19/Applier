@@ -208,3 +208,5 @@ Search task steps (in order): `search_linkedin`, `search_indeed`, `search_compan
 - `services.application_prep.prepare_application(db, user, job, *, resume_id=None, cover_letter_variant="professional", include_cover_letter=None) -> Application`.
 - `services.interview_prep.generate_prep(db, application) -> dict` (InterviewPrep dict).
 - `api.serializers.job_out / job_detail_out / match_out / company_out`.
+- `services.reminders.run_due_reminders(db) -> int` — called by the scheduler each tick: follow-up due, deadline approaching, interview tomorrow notifications (idempotent).
+- `api.serializers_applications.application_out(db, app) / application_detail_out(db, app)` — shared application serializers.
