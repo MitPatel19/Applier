@@ -1,0 +1,17 @@
+# Runtime
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+SQLAlchemy==2.1.0
+pydantic[email]==2.13.5
+pydantic-settings==2.15.0
+argon2-cffi==25.1.0
+PyJWT==2.15.0
+cryptography==50.0.1
+python-multipart==0.0.32
+httpx==0.28.1
+pypdf==6.19.0
+python-docx==1.2.0
+reportlab==5.0.1
+anthropic==1.8.0
+# PostgreSQL driver (production)
+psycopg[binary]==3.3.6

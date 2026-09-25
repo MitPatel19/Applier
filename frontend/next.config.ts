@@ -11,6 +11,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  output: "standalone",
   // The browser only ever talks to same-origin /api/*, which is proxied to FastAPI.
   // This keeps the session cookie first-party and httpOnly.
   async rewrites() {
