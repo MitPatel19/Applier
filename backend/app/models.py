@@ -249,6 +249,7 @@ class Resume(TimestampMixin, Base):
     parsed_text: Mapped[str | None] = mapped_column(Text)
     # Structured content (see schemas.resume.ResumeContent). Source of truth for tailoring.
     content: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
 
     versions: Mapped[list[ResumeVersion]] = relationship(back_populates="resume", cascade="all, delete-orphan")
 
@@ -265,8 +266,12 @@ class ResumeVersion(TimestampMixin, Base):
     label: Mapped[str] = mapped_column(String(255))
     file_name: Mapped[str] = mapped_column(String(255))  # e.g. Mit_Patel_Junior_Software_Developer_XYZ.pdf
     content: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)  # tailored ResumeContent (accepted changes applied)
+    # The base ResumeContent the changes were computed against, so decisions re-apply deterministically.
+    base_content: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
     # [{"id","type": emphasize|reorder|rewrite|remove|keyword,"section","item_ref","before","after","reason","accepted": bool|None}]
     changes: Mapped[list[dict[str, Any]]] = mapped_column(JSONType, default=list)
+    # {"keywords_matched": [...], "keywords_missing": [...], "integrity_notes": [...]}
+    insights: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
     status: Mapped[str] = mapped_column(String(20), default="draft")  # draft | approved
     ats_score: Mapped[int | None] = mapped_column(Integer)
 
@@ -470,6 +475,7 @@ class Recruiter(TimestampMixin, Base):
     notes: Mapped[str | None] = mapped_column(Text)
     last_contact_at: Mapped[datetime | None] = mapped_column(DateTime)
     next_follow_up_at: Mapped[datetime | None] = mapped_column(DateTime)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class Application(TimestampMixin, Base):
