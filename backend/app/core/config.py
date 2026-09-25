@@ -62,6 +62,12 @@ class Settings(BaseSettings):
     # Public employer ATS boards to search (company slugs). e.g. {"greenhouse": ["shopify"], "lever": ["..."]}
     employer_boards: dict[str, list[str]] = {}
 
+    # LinkedIn / Indeed job-search APIs are only available to approved partners. Set these once the
+    # deployment has partner access (and a partner client is installed); otherwise those sources are
+    # "not connected" (served by sample data in demo mode).
+    linkedin_partner_access: bool = False
+    indeed_partner_access: bool = False
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
