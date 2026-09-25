@@ -91,7 +91,7 @@ notification unread counts and audit timelines.
 | Sessions | Short-lived HS256 JWT in an httpOnly, SameSite=Lax cookie (Secure in production); `token_version` revokes all sessions. Bearer tokens supported for API clients. |
 | CSRF | Cookie-authenticated mutations require `X-Requested-With`, which cross-site forms cannot set. |
 | Authorization | Every query is scoped by `user_id` (`get_owned`); foreign ids return 404. `role` supports admin-only endpoints. |
-| Encryption at rest | Uploaded documents and OAuth tokens are encrypted with Fernet (`APPLIER_ENCRYPTION_KEY`); use disk/DB encryption as well in production. |
+| Encryption at rest | Uploaded documents and OAuth tokens are encrypted with Fernet (`APPLIER_ENCRYPTION_KEY`). Documents live in PostgreSQL (`stored_files`) by default, or on disk with SQLite / `APPLIER_STORAGE_BACKEND=filesystem`; use database/disk encryption as well in production. |
 | Encryption in transit | Deploy behind TLS; `APPLIER_COOKIE_SECURE=true` enables Secure cookies and HSTS. |
 | Integrations | OAuth with `state` validation and minimum scopes; tokens deleted on disconnect. |
 | Rate limiting | Login throttling per email + IP. |

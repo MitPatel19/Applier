@@ -57,9 +57,10 @@ applications and interviews. Sample data is clearly labelled and can be removed 
 
 ### Deploy on Railway
 
-Step-by-step guide: [`docs/DEPLOY_RAILWAY.md`](docs/DEPLOY_RAILWAY.md) (Postgres + API + web,
-with the exact settings and variables to paste). Generate production secrets with
-`python3 scripts/generate-secrets.py`.
+One service + PostgreSQL; the root `Dockerfile` and `railway.json` are picked up
+automatically. You only add three variables (`DATABASE_URL=${{Postgres.DATABASE_URL}}`,
+`APPLIER_SECRET_KEY`, `APPLIER_ENCRYPTION_KEY`; generate the secrets with
+`python3 scripts/generate-secrets.py`). Full guide: [`docs/DEPLOY_RAILWAY.md`](docs/DEPLOY_RAILWAY.md).
 
 ### Production (Docker)
 

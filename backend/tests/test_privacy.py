@@ -100,7 +100,7 @@ def test_delete_account_cascades_every_row_and_file(auth_client: TestClient, use
     db.expire_all()
     assert _owned_row_count(db, user_id) == 0
     assert _owned_row_count(db, other_id) == other_before
-    assert not (storage.root / f"u{user_id}").exists()  # type: ignore[attr-defined]
+    assert not (storage.files.root / f"u{user_id}").exists()  # type: ignore[attr-defined]
     assert auth_client.get("/api/auth/me").status_code == 401
     other.headers.update({"Authorization": f"Bearer {other_token}"})
     assert other.get("/api/auth/me").status_code == 200

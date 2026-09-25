@@ -21,6 +21,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -718,3 +719,18 @@ class EmailMessage(Base):
     confidence: Mapped[float] = mapped_column(Float, default=0)
     received_at: Mapped[datetime] = mapped_column(DateTime)
     processed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class StoredFile(Base):
+    """An encrypted document (uploaded resume, generated PDF/DOCX) kept in the database.
+
+    Used by ``core.storage.DatabaseEncryptedStorage`` so deployments need no persistent disk.
+    """
+
+    __tablename__ = "stored_files"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = _fk("users")
+    key: Mapped[str] = mapped_column(String(500), unique=True)
+    data: Mapped[bytes] = mapped_column(LargeBinary)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

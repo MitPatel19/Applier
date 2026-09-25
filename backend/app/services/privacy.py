@@ -51,6 +51,10 @@ EXPORT_EXCLUDED_COLUMNS = frozenset({
 })
 
 
+# Encrypted document blobs (downloadable individually from the app) are not inlined in the export.
+EXPORT_EXCLUDED_TABLES = frozenset({"stored_files"})
+
+
 def _json_default(value: Any) -> Any:
     if isinstance(value, datetime | date):
         return value.isoformat()
@@ -63,6 +67,8 @@ def _owned_rows_stmt(table: Table, user_id: int):
     """SELECT for the rows of ``table`` belonging to ``user_id`` (None if the table isn't user data)."""
     if table.name == User.__tablename__:
         return select(table).where(table.c.id == user_id)
+    if table.name in EXPORT_EXCLUDED_TABLES:
+        return None
     if "user_id" in table.c:
         return select(table).where(table.c.user_id == user_id)
     for fk in table.foreign_keys:
