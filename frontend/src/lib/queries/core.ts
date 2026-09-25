@@ -23,7 +23,8 @@ export function useLogout() {
     mutationFn: () => api.post("/auth/logout"),
     onSettled: () => {
       qc.clear();
-      window.location.href = "/login";
+      // Full page load so nothing from the old session stays in memory.
+      window.location.replace(`${window.location.origin}/login`);
     },
   });
 }

@@ -39,6 +39,7 @@ import {
   PopoverTrigger,
   Tooltip,
 } from "@/components/ui/primitives";
+import { useHydrated } from "@/components/marketing/theme-toggle";
 import { Logo } from "./logo";
 import { NAV, isActive } from "./nav";
 
@@ -181,8 +182,7 @@ function NotificationsButton() {
 // ---------------------------------------------------------------- theme + user
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
   const Icon = !mounted ? Monitor : theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
   return (
     <DropdownMenu>
@@ -319,8 +319,6 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
 // ---------------------------------------------------------------- shell
 export function AppShell({ user, children }: { user: User; children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const pathname = usePathname();
-  React.useEffect(() => setMobileOpen(false), [pathname]);
 
   return (
     <div className="min-h-dvh bg-bg">
