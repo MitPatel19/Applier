@@ -77,6 +77,8 @@ show "not connected" (and labelled sample jobs while demo mode is on).
 
 `backend/railway.json` and `frontend/railway.json` support running the API and web app as
 two Railway services (Root Directory `/backend` and `/frontend`, config paths
-`/backend/railway.json` and `/frontend/railway.json`). The web service then needs
+`/backend/railway.json` and `/frontend/railway.json`). When generating the web service's
+domain, use the port its deploy log shows ("Local: http://localhost:8080" → `8080`; Railway
+assigns it). The web service then needs
 `BACKEND_URL=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:8000` and the API `PORT=8000`. The
 single-service setup above is simpler and recommended.
