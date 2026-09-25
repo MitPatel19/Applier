@@ -36,3 +36,16 @@ def test_platform_defaults(monkeypatch):
     assert s.frontend_url == "https://applier.up.railway.app"
     assert s.cookie_secure is True
     assert "https://applier.up.railway.app" in s.cors_origins
+
+
+def test_non_fernet_encryption_key_is_derived(monkeypatch):
+    from app.core import crypto
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "encryption_key", "my-simple-passphrase")
+    crypto._fernet.cache_clear()
+    try:
+        token = crypto.encrypt_bytes(b"resume")
+        assert crypto.decrypt_bytes(token) == b"resume"
+    finally:
+        crypto._fernet.cache_clear()

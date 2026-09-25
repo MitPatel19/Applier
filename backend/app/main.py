@@ -32,6 +32,7 @@ from app.api.routers import (
     users,
 )
 from app.core.config import get_settings
+from app.core.crypto import check_keys
 from app.core.errors import register_error_handlers
 from app.db import init_db
 from app.services.agent.scheduler import start_scheduler, stop_scheduler
@@ -48,6 +49,7 @@ ROUTERS = [
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    check_keys()
     settings = get_settings()
     if settings.scheduler_enabled and settings.environment != "test":
         await start_scheduler()
