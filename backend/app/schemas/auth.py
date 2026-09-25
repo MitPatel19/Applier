@@ -60,3 +60,24 @@ class SessionOut(BaseModel):
     # Returned for non-browser API clients; browsers use the httpOnly cookie.
     access_token: str
     token_type: str = "bearer"
+
+
+class StoredDataCategory(BaseModel):
+    category: str
+    count: int
+    description: str
+
+
+class PrivacyIntegration(BaseModel):
+    provider: str
+    name: str
+    status: str
+    account_label: str | None = None
+    scopes: list[str] = []
+
+
+class PrivacyOut(BaseModel):
+    stored_data: list[StoredDataCategory]
+    integrations: list[PrivacyIntegration]
+    retention: str
+    encryption: str

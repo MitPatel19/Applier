@@ -32,7 +32,7 @@ Schemas referenced below live in `backend/app/schemas/*.py` and are mirrored 1:1
 | PATCH | `/users/me` | `UserUpdate` | `UserOut` |
 | GET | `/users/me/export` | – | JSON attachment of all personal data (`Content-Disposition: attachment`) |
 | DELETE | `/users/me` | `DeleteAccountIn` (`password`, `confirm="DELETE"`) | 204 — deletes all rows + stored files |
-| GET | `/users/me/privacy` | – | `{stored_data: [{category, count, description}], integrations: [...], retention: str, encryption: str}` |
+| GET | `/users/me/privacy` | – | `PrivacyOut` (`schemas/auth.py`): `{stored_data: [{category, count, description}], integrations: [{provider, name, status, account_label, scopes}], retention: str, encryption: str}` |
 
 ## Profile — `routers/profile.py`
 | GET | `/profile` | – | `FullProfileOut` |
@@ -130,7 +130,7 @@ Weight keys: `skills, experience, education, location, salary, work_arrangement,
 | GET/PATCH/DELETE | `/interviews/{id}` | `InterviewUpdate` | `InterviewDetailOut` |
 | POST | `/interviews/{id}/prep/regenerate` | – | `InterviewDetailOut` |
 | POST | `/interviews/{id}/practice` | `PracticeIn` | `PracticeEntry` (heuristic STAR feedback) |
-| GET | `/interviews/{id}/ics` | – | calendar file |
+| GET | `/interviews/{id}/ics` | – | `text/calendar` file (UTC times, 30-min alarm); 400 `not_scheduled` when `scheduled_at` is empty |
 
 ## Networking — `routers/recruiters.py`
 | GET/POST | `/recruiters` | `RecruiterIn` | `RecruiterOut` |
@@ -159,9 +159,9 @@ Weight keys: `skills, experience, education, location, salary, work_arrangement,
 ## Integrations — `routers/integrations.py`
 | GET | `/integrations` | – | `list[IntegrationOut]` for: linkedin, indeed, gmail, outlook, google_calendar, microsoft_calendar |
 | POST | `/integrations/{provider}/connect` | – | `ConnectOut` (OAuth authorize URL with `state`); 400 with friendly message when the server has no OAuth credentials for that provider |
-| GET | `/integrations/{provider}/callback?code&state` | – | redirect to `{frontend_url}/settings?tab=integrations&connected=provider` |
+| GET | `/integrations/{provider}/callback?code&state` | – | redirect to `{frontend_url}/settings?tab=integrations&connected=provider`; on failure `...&provider=<p>&error=state_mismatch\|access_denied\|authorization_failed\|token_exchange_failed\|session_expired` |
 | POST | `/integrations/{provider}/disconnect` | – | `IntegrationOut` (tokens deleted) |
-| POST | `/integrations/email/sync` | – | `AgentTaskOut` |
+| POST | `/integrations/email/sync` | – | `AgentTaskOut` (`kind=email_sync`, runs inline and returns the finished task; steps `connect, fetch, classify, match, update`). Without a connected Gmail/Outlook: sample demo emails in demo mode, else 400 `no_mailbox` |
 
 ## Agent — `routers/agent.py`
 | GET | `/agent/status` | – | `AgentStatusOut` |
@@ -189,7 +189,7 @@ Search task steps (in order): `search_linkedin`, `search_indeed`, `search_compan
 
 ## Demo — `routers/demo.py` (only when `APPLIER_DEMO_MODE=true`)
 | POST | `/demo/seed` | – | `{"message": str}` — fills the current account with a realistic sample profile, resumes, jobs, applications, interviews, follow-ups, notifications and audit history (all demo rows flagged `is_demo`) |
-| DELETE | `/demo` | – | 204 — removes demo rows |
+| DELETE | `/demo` | – | 204 — removes demo rows (also allowed when demo mode is off), including the sample profile sections if the seed created them |
 
 ## Shared backend services (import contracts)
 - `services.profile_bundle.load_bundle(db, user) -> ProfileBundle` — the ONLY source of user facts.
